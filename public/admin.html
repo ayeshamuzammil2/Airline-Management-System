@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Admin Dashboard — Skyline Airways</title>
+<link rel="stylesheet" href="css/style.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+</head>
+<body>
+<div class="dash">
+  <aside class="sidebar">
+    <a href="index.html" class="brand"><span class="badge"><i class="fa-solid fa-plane"></i></span>Skyline Airways</a>
+    <div class="side-user">
+      <div class="av" id="side-av">A</div>
+      <div class="info"><b id="side-name">Admin</b><span>Administrator</span></div>
+    </div>
+    <nav class="side-nav">
+      <button data-view="overview" class="active"><i class="fa-solid fa-chart-line"></i> Overview</button>
+      <button data-view="flights"><i class="fa-solid fa-plane"></i> Flights</button>
+      <button data-view="bookings"><i class="fa-solid fa-ticket"></i> Bookings</button>
+      <button data-view="payments"><i class="fa-solid fa-sack-dollar"></i> Payments</button>
+      <button data-view="users"><i class="fa-solid fa-users"></i> Travelers</button>
+    </nav>
+    <div class="side-logout"><button id="logout-btn"><i class="fa-solid fa-right-from-bracket"></i> Log out</button></div>
+  </aside>
+
+  <main class="main-area">
+
+    <section class="view active" id="view-overview">
+      <div class="page-head"><div><h1>Overview</h1><p>Live performance across the airline.</p></div></div>
+      <div class="stat-row">
+        <div class="stat-card"><div class="top"><div class="ic"><i class="fa-solid fa-plane"></i></div></div><b id="stat-flights">0</b><span>Active flights</span></div>
+        <div class="stat-card"><div class="top"><div class="ic"><i class="fa-solid fa-users"></i></div></div><b id="stat-users">0</b><span>Registered travelers</span></div>
+        <div class="stat-card"><div class="top"><div class="ic"><i class="fa-solid fa-ticket"></i></div></div><b id="stat-bookings">0</b><span>Confirmed bookings</span></div>
+        <div class="stat-card"><div class="top"><div class="ic"><i class="fa-solid fa-sack-dollar"></i></div></div><b id="stat-revenue" style="font-size:1.4rem;">PKR 0</b><span>Total revenue</span></div>
+      </div>
+
+      <div class="grid-2">
+        <div class="panel">
+          <div class="panel-head"><h3>Bookings — last 14 days</h3></div>
+          <div class="chart-wrap"><canvas id="chart-trend"></canvas></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h3>Revenue — last 14 days</h3></div>
+          <div class="chart-wrap"><canvas id="chart-revenue"></canvas></div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="panel">
+          <div class="panel-head"><h3>Top routes</h3></div>
+          <div class="chart-wrap small"><canvas id="chart-routes"></canvas></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h3>Economy vs Business</h3></div>
+          <div class="chart-wrap small"><canvas id="chart-class"></canvas></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head"><h3>Seat occupancy — upcoming flights</h3></div>
+        <div class="chart-wrap"><canvas id="chart-occupancy"></canvas></div>
+      </div>
+    </section>
+
+    <section class="view" id="view-flights">
+      <div class="page-head">
+        <div><h1>Flights</h1><p>Manage schedules, pricing and seat inventory.</p></div>
+        <button class="btn btn-amber" id="add-flight-btn"><i class="fa-solid fa-plus"></i> Add flight</button>
+      </div>
+      <div class="panel">
+        <table>
+          <thead><tr><th>Flight</th><th>Route</th><th>Departs</th><th>Fares</th><th>Seats left</th><th>Status</th><th></th></tr></thead>
+          <tbody id="flights-body"></tbody>
+        </table>
+        <div class="empty-state" id="flights-empty" style="display:none;"><i class="fa-solid fa-plane"></i><p>No flights yet.</p></div>
+      </div>
+    </section>
+
+    <section class="view" id="view-bookings">
+      <div class="page-head"><div><h1>All bookings</h1><p>Every ticket booked across the network.</p></div></div>
+      <div class="panel">
+        <table>
+          <thead><tr><th>Ref</th><th>Passenger</th><th>Route</th><th>Flight</th><th>Seat</th><th>Amount</th><th>Payment</th><th>Payment status</th><th>Status</th></tr></thead>
+          <tbody id="bookings-body"></tbody>
+        </table>
+        <div class="empty-state" id="bookings-empty" style="display:none;"><i class="fa-solid fa-ticket"></i><p>No bookings yet.</p></div>
+      </div>
+    </section>
+
+    <section class="view" id="view-payments">
+      <div class="page-head"><div><h1>Payments</h1><p>Track payment status for every booking. Mark cash payments as paid once collected at the counter.</p></div></div>
+      <div class="panel">
+        <table>
+          <thead><tr><th>Ref</th><th>Passenger</th><th>Flight</th><th>Amount</th><th>Method</th><th>Status</th><th></th></tr></thead>
+          <tbody id="payments-body"></tbody>
+        </table>
+        <div class="empty-state" id="payments-empty" style="display:none;"><i class="fa-solid fa-sack-dollar"></i><p>No payments yet.</p></div>
+      </div>
+    </section>
+
+    <section class="view" id="view-users">
+      <div class="page-head"><div><h1>Travelers</h1><p>Everyone registered on Skyline.</p></div></div>
+      <div class="panel">
+        <table>
+          <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Wallet balance</th><th>Joined</th></tr></thead>
+          <tbody id="users-body"></tbody>
+        </table>
+        <div class="empty-state" id="users-empty" style="display:none;"><i class="fa-solid fa-users"></i><p>No travelers yet.</p></div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<div class="modal-overlay" id="flight-modal">
+  <div class="modal-box">
+    <h3 id="flight-modal-title">Add flight</h3>
+    <form id="flight-form">
+      <div class="field no-icon"><label>Flight number</label><input type="text" id="f-number" placeholder="SA-104" required /></div>
+      <div class="grid-2">
+        <div class="field no-icon"><label>From</label><select id="f-origin" required></select></div>
+        <div class="field no-icon"><label>To</label><select id="f-destination" required></select></div>
+      </div>
+      <div class="grid-2">
+        <div class="field no-icon"><label>Departure</label><input type="datetime-local" id="f-departure" required /></div>
+        <div class="field no-icon"><label>Arrival</label><input type="datetime-local" id="f-arrival" required /></div>
+      </div>
+      <div class="grid-2">
+        <div class="field no-icon"><label>Economy price (PKR)</label><input type="number" id="f-eco-price" min="0" required /></div>
+        <div class="field no-icon"><label>Business price (PKR)</label><input type="number" id="f-biz-price" min="0" required /></div>
+      </div>
+      <div class="grid-2" id="seat-count-fields">
+        <div class="field no-icon"><label>Economy seats</label><input type="number" id="f-eco-seats" min="1" value="24" /></div>
+        <div class="field no-icon"><label>Business seats</label><input type="number" id="f-biz-seats" min="1" value="8" /></div>
+      </div>
+      <div class="field no-icon" id="status-field" style="display:none;">
+        <label>Status</label>
+        <select id="f-status">
+          <option value="scheduled">Scheduled</option>
+          <option value="delayed">Delayed</option>
+          <option value="completed">Completed</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" id="flight-modal-cancel">Cancel</button>
+        <button type="submit" class="btn btn-amber" id="flight-modal-save">Save flight</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="modal-overlay" id="delete-modal">
+  <div class="modal-box">
+    <h3>Delete this flight?</h3>
+    <p style="color:var(--muted);font-size:.9rem;" id="delete-text">This will permanently remove the flight and cannot be undone.</p>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="delete-cancel">Cancel</button>
+      <button class="btn" id="delete-confirm" style="background:var(--danger);color:#fff;border:none;">Delete</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/main.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>

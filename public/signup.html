@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sign up — Skyline Airways</title>
+<link rel="stylesheet" href="css/style.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+</head>
+<body>
+<div class="auth-wrap">
+  <div class="auth-card">
+    <a href="index.html" class="back-link"><i class="fa-solid fa-arrow-left"></i> Back to home</a>
+    <div class="auth-head">
+      <span class="badge brand"><i class="fa-solid fa-plane"></i></span>
+      <h1>Create your account</h1>
+      <p>Join Skyline and start booking flights</p>
+    </div>
+
+    <div id="msg" class="msg-banner error"><i class="fa-solid fa-circle-exclamation"></i><span id="msg-text"></span></div>
+
+    <form id="signup-form">
+      <div class="field">
+        <label>Full name</label>
+        <div class="input-wrap"><i class="fa-regular fa-id-card icon-left"></i><input type="text" id="name" placeholder="Jane Doe" required /></div>
+      </div>
+      <div class="field">
+        <label>Email</label>
+        <div class="input-wrap"><i class="fa-regular fa-envelope icon-left"></i><input type="email" id="email" placeholder="you@example.com" required /></div>
+      </div>
+      <div class="field">
+        <label>Phone <span style="font-weight:400;color:var(--muted);">(optional)</span></label>
+        <div class="input-wrap"><i class="fa-solid fa-phone icon-left"></i><input type="text" id="phone" placeholder="+92 300 1234567" /></div>
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <div class="input-wrap"><i class="fa-solid fa-lock icon-left"></i><input type="password" id="password" placeholder="Create a password" required minlength="4" /></div>
+      </div>
+      <button type="submit" class="btn btn-amber btn-block" id="signup-btn"><i class="fa-solid fa-user-plus"></i> Create account</button>
+    </form>
+
+    <p class="form-foot">Already have an account? <a href="login.html">Log in</a></p>
+  </div>
+</div>
+
+<script src="js/main.js"></script>
+<script>
+function showMsg(text) {
+  document.getElementById('msg').classList.add('show');
+  document.getElementById('msg-text').textContent = text;
+}
+
+document.getElementById('signup-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById('signup-btn');
+  document.getElementById('msg').classList.remove('show');
+  const name = document.getElementById('name').value.trim();
+  const email = document.getElementById('email').value.trim();
+  const phone = document.getElementById('phone').value.trim();
+  const password = document.getElementById('password').value;
+
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-circle-notch spin"></i> Creating account...';
+  try {
+    const { user } = await api('/auth/signup', { method: 'POST', body: JSON.stringify({ name, email, phone, password }) });
+    setSession('user', user);
+    toast('Account created! Redirecting...');
+    setTimeout(() => { window.location.href = 'mybookings.html'; }, 500);
+  } catch (err) {
+    showMsg(err.message);
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-user-plus"></i> Create account';
+  }
+});
+</script>
+</body>
+</html>

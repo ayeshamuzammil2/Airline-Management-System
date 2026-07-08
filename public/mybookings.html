@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>My Bookings — Skyline Airways</title>
+<link rel="stylesheet" href="css/style.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+</head>
+<body>
+<div class="dash">
+  <aside class="sidebar">
+    <a href="index.html" class="brand"><span class="badge"><i class="fa-solid fa-plane"></i></span>Skyline Airways</a>
+    <div class="side-user">
+      <div class="av" id="side-av">T</div>
+      <div class="info"><b id="side-name">Traveler</b><span>Traveler</span></div>
+    </div>
+    <nav class="side-nav">
+      <button data-view="overview" class="active"><i class="fa-solid fa-house"></i> Overview</button>
+      <button data-view="bookings"><i class="fa-solid fa-ticket"></i> My bookings</button>
+      <button data-view="wallet"><i class="fa-solid fa-wallet"></i> Wallet</button>
+      <button data-view="book"><i class="fa-solid fa-magnifying-glass"></i> Book a flight</button>
+    </nav>
+    <div class="side-logout"><button id="logout-btn"><i class="fa-solid fa-right-from-bracket"></i> Log out</button></div>
+  </aside>
+
+  <main class="main-area">
+
+    <section class="view active" id="view-overview">
+      <div class="page-head"><div><h1>Welcome, <span id="ov-name">—</span> ✈️</h1><p>Here's your travel summary.</p></div></div>
+      <div class="stat-row">
+        <div class="stat-card"><div class="top"><div class="ic"><i class="fa-solid fa-ticket"></i></div></div><b id="stat-upcoming">0</b><span>Upcoming trips</span></div>
+        <div class="stat-card"><div class="top"><div class="ic"><i class="fa-solid fa-plane-circle-check"></i></div></div><b id="stat-total">0</b><span>Total bookings</span></div>
+        <div class="stat-card"><div class="top"><div class="ic"><i class="fa-solid fa-money-bill-wave"></i></div></div><b id="stat-spent">PKR 0</b><span>Total spent</span></div>
+        <div class="stat-card"><div class="top"><div class="ic"><i class="fa-solid fa-xmark"></i></div></div><b id="stat-cancelled">0</b><span>Cancelled</span></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h3>Next trip</h3><button class="btn btn-amber btn-sm" data-goto="book"><i class="fa-solid fa-plus"></i> Book another</button></div>
+        <div id="overview-next"></div>
+      </div>
+    </section>
+
+    <section class="view" id="view-bookings">
+      <div class="page-head"><div><h1>My bookings</h1><p>All your trips, upcoming and past.</p></div></div>
+      <div id="bookings-list"></div>
+    </section>
+
+    <section class="view" id="view-wallet">
+      <div class="page-head">
+        <div><h1>Skyline Wallet</h1><p>Add money and pay for flights instantly.</p></div>
+        <button class="btn btn-amber" id="add-money-btn"><i class="fa-solid fa-plus"></i> Add money</button>
+      </div>
+      <div class="wallet-card">
+        <div><div class="label">Available balance</div><div class="amount" id="wallet-amount">PKR 0</div></div>
+        <i class="fa-solid fa-wallet" style="font-size:2.4rem;color:var(--amber);"></i>
+      </div>
+      <div class="panel" style="margin-top:22px;">
+        <div class="panel-head"><h3>Transaction history</h3></div>
+        <div id="wallet-txn-list"></div>
+      </div>
+    </section>
+
+    <section class="view" id="view-book">
+      <div class="page-head"><div><h1>Book a new flight</h1><p>Search live availability across our network.</p></div></div>
+      <div class="panel">
+        <div class="grid-2">
+          <div class="field no-icon"><label>From</label><select id="from-select"></select></div>
+          <div class="field no-icon"><label>To</label><select id="to-select"></select></div>
+        </div>
+        <div class="field no-icon"><label>Departure date</label><input type="date" id="date-select" /></div>
+        <button class="btn btn-amber btn-block" id="go-search-btn"><i class="fa-solid fa-magnifying-glass"></i> Search flights</button>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<div class="modal-overlay" id="cancel-modal">
+  <div class="modal-box">
+    <h3>Cancel this booking?</h3>
+    <p style="color:var(--muted);font-size:.9rem;">Your seat will be released back to the flight.</p>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="cancel-no">Keep it</button>
+      <button class="btn" id="cancel-yes" style="background:var(--danger);color:#fff;border:none;">Yes, cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="topup-modal">
+  <div class="modal-box">
+    <h3>Add money to wallet</h3>
+    <p style="color:var(--muted);font-size:.86rem;margin:-8px 0 18px;">Enter an amount — it's added to your wallet instantly.</p>
+    <form id="topup-form">
+      <div class="field no-icon"><label>Amount (PKR)</label><input type="number" id="topup-amount" min="100" step="100" placeholder="10000" required autofocus /></div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" id="topup-cancel">Cancel</button>
+        <button type="submit" class="btn btn-amber" id="topup-submit"><i class="fa-solid fa-wallet"></i> Add money</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="js/main.js"></script>
+<script src="js/mybookings.js"></script>
+</body>
+</html>

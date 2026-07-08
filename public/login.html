@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Log in — Skyline Airways</title>
+<link rel="stylesheet" href="css/style.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+</head>
+<body>
+<div class="auth-wrap">
+  <div class="auth-card">
+    <a href="index.html" class="back-link"><i class="fa-solid fa-arrow-left"></i> Back to home</a>
+    <div class="auth-head">
+      <span class="badge brand"><i class="fa-solid fa-plane"></i></span>
+      <h1>Welcome back</h1>
+      <p>Log in to manage your trips</p>
+    </div>
+
+    <div class="role-tabs" id="role-tabs">
+      <button type="button" class="active" data-role="user"><i class="fa-solid fa-user"></i> Traveler</button>
+      <button type="button" data-role="admin"><i class="fa-solid fa-user-shield"></i> Admin</button>
+    </div>
+
+    <div id="msg" class="msg-banner error"><i class="fa-solid fa-circle-exclamation"></i><span id="msg-text"></span></div>
+
+    <form id="login-form">
+      <div class="field">
+        <label id="identifier-label">Email</label>
+        <div class="input-wrap">
+          <i class="fa-regular fa-envelope icon-left"></i>
+          <input type="text" id="identifier" placeholder="you@example.com" required />
+        </div>
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <div class="input-wrap">
+          <i class="fa-solid fa-lock icon-left"></i>
+          <input type="password" id="password" placeholder="••••••••" required />
+        </div>
+        <div style="text-align:right;margin-top:8px;">
+          <a href="#" id="forgot-link" style="font-size:.82rem;color:var(--steel);font-weight:700;">Forgot password?</a>
+        </div>
+      </div>
+      <button type="submit" class="btn btn-amber btn-block" id="login-btn"><i class="fa-solid fa-right-to-bracket"></i> Log in</button>
+    </form>
+
+    <p class="form-foot">New here? <a href="signup.html">Create an account</a></p>
+
+  </div> 
+</div>
+
+<div class="modal-overlay" id="forgot-modal">
+  <div class="modal-box">
+    <h3>Reset your password</h3>
+    <p style="color:var(--muted);font-size:.86rem;margin:-8px 0 18px;">This demo has no email service, so confirm your account below and set a new password directly.</p>
+    <div id="forgot-msg" class="msg-banner error"><i class="fa-solid fa-circle-exclamation"></i><span id="forgot-msg-text"></span></div>
+    <form id="forgot-form">
+      <div class="role-tabs" id="forgot-role-tabs" style="margin-bottom:18px;">
+        <button type="button" class="active" data-role="user"><i class="fa-solid fa-user"></i> Traveler</button>
+        <button type="button" data-role="admin"><i class="fa-solid fa-user-shield"></i> Admin</button>
+      </div>
+      <div class="field no-icon">
+        <label id="forgot-id-label">Email</label>
+        <input type="text" id="forgot-identifier" placeholder="you@example.com" required />
+      </div>
+      <div class="field no-icon">
+        <label>New password</label>
+        <input type="password" id="forgot-password" placeholder="At least 4 characters" required minlength="4" />
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" id="forgot-cancel">Cancel</button>
+        <button type="submit" class="btn btn-amber" id="forgot-submit"><i class="fa-solid fa-key"></i> Reset password</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="js/main.js"></script>
+<script>
+let currentRole = 'user';
+const tabs = document.querySelectorAll('#role-tabs button');
+const idLabel = document.getElementById('identifier-label');
+const idInput = document.getElementById('identifier');
+
+tabs.forEach((btn) => {
+  btn.addEventListener('click', () => {
+    tabs.forEach((b) => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentRole = btn.dataset.role;
+    if (currentRole === 'admin') {
+      idLabel.textContent = 'Username'; idInput.placeholder = 'admin'; idInput.type = 'text';
+    } else {
+      idLabel.textContent = 'Email'; idInput.placeholder = 'you@example.com'; idInput.type = 'email';
+    }
+  });
+});
+
+function showMsg(text) {
+  document.getElementById('msg').classList.add('show');
+  document.getElementById('msg-text').textContent = text;
+}
+
+document.getElementById('login-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById('login-btn');
+  const identifier = idInput.value.trim();
+  const password = document.getElementById('password').value;
+  document.getElementById('msg').classList.remove('show');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-circle-notch spin"></i> Logging in...';
+  try {
+    const { user } = await api('/auth/login', { method: 'POST', body: JSON.stringify({ role: currentRole, identifier, password }) });
+    setSession(currentRole, user);
+    toast(`Welcome back, ${user.name || user.username}!`);
+    setTimeout(() => { window.location.href = currentRole === 'admin' ? 'admin.html' : 'mybookings.html'; }, 500);
+  } catch (err) {
+    showMsg(err.message);
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Log in';
+  }
+});
+
+// ---------- forgot password ----------
+let forgotRole = 'user';
+const forgotTabs = document.querySelectorAll('#forgot-role-tabs button');
+const forgotIdLabel = document.getElementById('forgot-id-label');
+const forgotIdInput = document.getElementById('forgot-identifier');
+
+forgotTabs.forEach((btn) => {
+  btn.addEventListener('click', () => {
+    forgotTabs.forEach((b) => b.classList.remove('active'));
+    btn.classList.add('active');
+    forgotRole = btn.dataset.role;
+    forgotIdLabel.textContent = forgotRole === 'admin' ? 'Username' : 'Email';
+    forgotIdInput.placeholder = forgotRole === 'admin' ? 'admin' : 'you@example.com';
+  });
+});
+
+document.getElementById('forgot-link').addEventListener('click', (e) => {
+  e.preventDefault();
+  document.getElementById('forgot-msg').classList.remove('show');
+  document.getElementById('forgot-form').reset();
+  document.getElementById('forgot-modal').classList.add('show');
+});
+document.getElementById('forgot-cancel').addEventListener('click', () => document.getElementById('forgot-modal').classList.remove('show'));
+
+document.getElementById('forgot-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById('forgot-submit');
+  const identifier = forgotIdInput.value.trim();
+  const newPassword = document.getElementById('forgot-password').value;
+  document.getElementById('forgot-msg').classList.remove('show');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-circle-notch spin"></i> Updating...';
+  try {
+    await api('/auth/reset-password', { method: 'POST', body: JSON.stringify({ role: forgotRole, identifier, newPassword }) });
+    toast('Password updated! Please log in with your new password.');
+    document.getElementById('forgot-modal').classList.remove('show');
+  } catch (err) {
+    document.getElementById('forgot-msg').classList.add('show');
+    document.getElementById('forgot-msg-text').textContent = err.message;
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-key"></i> Reset password';
+  }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Search results — Skyline Airways</title>
+<link rel="stylesheet" href="css/style.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="container topnav-inner">
+    <a href="index.html" class="brand"><span class="badge"><i class="fa-solid fa-plane"></i></span>Skyline Airways</a>
+    <div class="topnav-links" id="nav-links">
+      <a href="login.html" class="btn btn-ghost">Log in</a>
+      <a href="signup.html" class="btn btn-primary">Sign up</a>
+    </div>
+  </div>
+</nav>
+
+<div class="container" style="padding-top:34px;">
+  <div class="search-card" style="margin-bottom:30px;">
+    <form id="search-form" class="search-grid">
+      <div class="search-field">
+        <label>From</label>
+        <select id="from-select" required></select>
+      </div>
+      <div class="search-field">
+        <label>To</label>
+        <div class="route-row">
+          <button type="button" class="swap-btn" id="swap-btn" title="Swap"><i class="fa-solid fa-arrow-right-arrow-left"></i></button>
+          <select id="to-select" required style="flex:1;"></select>
+        </div>
+      </div>
+      <div class="search-field">
+        <label>Departure date</label>
+        <input type="date" id="date-select" />
+      </div>
+      <button type="submit" class="btn btn-amber" style="padding:13px 30px;"><i class="fa-solid fa-magnifying-glass"></i> Search</button>
+    </form>
+  </div>
+
+  <div class="page-head">
+    <div><h1 id="results-title">Flights</h1><p id="results-sub">Choose a flight to continue.</p></div>
+  </div>
+
+  <div id="results-list"></div>
+</div>
+
+<footer class="site-footer" style="margin-top:60px;">
+  <div class="container"><p class="foot-note">Built as a portfolio project — Skyline Airways Reservation System.</p></div>
+</footer>
+
+<script src="js/main.js"></script>
+<script>
+async function loadAirports() {
+  const { airports } = await api('/airports');
+  const fromSel = document.getElementById('from-select');
+  const toSel = document.getElementById('to-select');
+  const opts = airports.map((a) => `<option value="${a.code}">${a.city} (${a.code})</option>`).join('');
+  fromSel.innerHTML = opts;
+  toSel.innerHTML = opts;
+  fromSel.value = qs('from') || airports[0]?.code;
+  toSel.value = qs('to') || airports[1]?.code;
+}
+
+document.getElementById('swap-btn').addEventListener('click', () => {
+  const fromSel = document.getElementById('from-select');
+  const toSel = document.getElementById('to-select');
+  const tmp = fromSel.value; fromSel.value = toSel.value; toSel.value = tmp;
+});
+
+document.getElementById('search-form').addEventListener('submit', (e) => {
+  e.preventDefault();
+  runSearch();
+});
+
+async function runSearch() {
+  const from = document.getElementById('from-select').value;
+  const to = document.getElementById('to-select').value;
+  const date = document.getElementById('date-select').value;
+  const params = new URLSearchParams({ from, to });
+  if (date) params.set('date', date);
+  history.replaceState(null, '', `flights.html?${params.toString()}`);
+
+  const list = document.getElementById('results-list');
+  list.innerHTML = `<div class="empty-state"><i class="fa-solid fa-circle-notch spin"></i><p>Searching flights...</p></div>`;
+
+  try {
+    const { flights } = await api(`/flights/search?${params.toString()}`);
+    const fromCity = flights[0]?.origin_city || from;
+    const toCity = flights[0]?.destination_city || to;
+    document.getElementById('results-title').textContent = `${from} → ${to}`;
+    document.getElementById('results-sub').textContent = `${flights.length} flight${flights.length === 1 ? '' : 's'} found${date ? ' on ' + formatDate(date) : ''}`;
+
+    if (!flights.length) {
+      list.innerHTML = `<div class="empty-state"><i class="fa-solid fa-plane-slash"></i><p>No flights found for this route${date ? ' on this date' : ''}. Try another date or route.</p></div>`;
+      return;
+    }
+
+    list.innerHTML = flights.map((f) => `
+      <div class="flight-card">
+        <div class="flight-route">
+          <div class="time-block"><b>${formatTime(f.departure_time)}</b><span>${f.origin_code}</span></div>
+          <div class="path">
+            <div class="dur">${durationBetween(f.departure_time, f.arrival_time)}</div>
+            <div class="route-path"><div class="line"></div><i class="fa-solid fa-plane"></i></div>
+          </div>
+          <div class="time-block"><b>${formatTime(f.arrival_time)}</b><span>${f.destination_code}</span></div>
+        </div>
+        <div class="flight-meta">
+          <div class="num">${f.flight_number}</div>
+          <div style="font-size:.78rem;color:var(--muted);margin-top:2px;">${formatDate(f.departure_time)}</div>
+          <div style="font-size:.78rem;color:var(--muted);margin-top:2px;">${f.economy_available} economy · ${f.business_available} business left</div>
+        </div>
+        <div class="flight-price">
+          <b>${formatMoney(f.economy_price)}</b>
+          <span>economy, per seat</span>
+          <a href="booking.html?flightId=${f.id}" class="btn btn-amber btn-sm" style="margin-top:10px;">Select <i class="fa-solid fa-arrow-right"></i></a>
+        </div>
+      </div>`).join('');
+  } catch (err) {
+    list.innerHTML = `<div class="empty-state"><i class="fa-solid fa-plug-circle-xmark"></i><p>${err.message}</p></div>`;
+  }
+}
+
+function initNav() {
+  const session = getSession();
+  if (session) {
+    document.getElementById('nav-links').innerHTML = `
+      <a href="${session.role === 'admin' ? 'admin.html' : 'mybookings.html'}" class="btn btn-ghost"><i class="fa-solid fa-gauge"></i> Dashboard</a>
+      <a href="#" id="nav-logout" class="btn btn-primary"><i class="fa-solid fa-right-from-bracket"></i> Log out</a>`;
+    document.getElementById('nav-logout').addEventListener('click', (e) => { e.preventDefault(); clearSession(); window.location.reload(); });
+  }
+}
+
+document.getElementById('date-select').value = qs('date') || '';
+document.getElementById('date-select').min = new Date().toISOString().slice(0, 10);
+
+initNav();
+loadAirports().then(runSearch);
+</script>
+</body>
+</html>

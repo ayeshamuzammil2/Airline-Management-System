@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Receipt — Skyline Airways</title>
+<link rel="stylesheet" href="css/style.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+</head>
+<body>
+
+<nav class="topnav no-print">
+  <div class="container topnav-inner">
+    <a href="index.html" class="brand"><span class="badge"><i class="fa-solid fa-plane"></i></span>Skyline Airways</a>
+    <div class="topnav-links">
+      <button class="btn btn-amber" id="print-btn"><i class="fa-solid fa-print"></i> Print</button>
+    </div>
+  </div>
+</nav>
+
+<div class="container receipt-wrap">
+  <div id="receipt-content"></div>
+</div>
+
+<script src="js/main.js"></script>
+<script>
+const bookingId = qs('bookingId');
+
+async function load() {
+  const wrap = document.getElementById('receipt-content');
+  if (!bookingId) { wrap.innerHTML = `<div class="empty-state"><p>No booking specified.</p></div>`; return; }
+  try {
+    const { booking: b } = await api(`/bookings/${bookingId}`);
+    const paymentLabel = b.payment_method === 'card' ? `Card •••• ${b.card_last4 || ''}`
+      : b.payment_method === 'wallet' ? 'Skyline Wallet' : 'Cash at counter';
+
+    wrap.innerHTML = `
+      <div class="receipt-box">
+        <div class="receipt-head">
+          <div>
+            <h2><i class="fa-solid fa-plane"></i> Skyline Airways</h2>
+            <p style="margin:0;color:var(--muted);font-size:.85rem;">Payment Receipt</p>
+          </div>
+          <div style="text-align:right;">
+            <span class="badge ${b.status}">${b.status}</span><br/>
+            <span class="badge ${b.payment_status}" style="margin-top:6px;display:inline-block;">${b.payment_status}</span>
+          </div>
+        </div>
+
+        <div class="receipt-row"><span>Booking reference</span><b>${b.booking_ref}</b></div>
+        <div class="receipt-row"><span>Passenger</span><b>${b.passenger_name}</b></div>
+        <div class="receipt-row"><span>Flight</span><b>${b.flight_number}</b></div>
+        <div class="receipt-row"><span>Route</span><b>${b.origin_city} (${b.origin_code}) → ${b.destination_city} (${b.destination_code})</b></div>
+        <div class="receipt-row"><span>Departure</span><b>${formatDate(b.departure_time)}, ${formatTime(b.departure_time)}</b></div>
+        <div class="receipt-row"><span>Class</span><b style="text-transform:capitalize;">${b.class}</b></div>
+        <div class="receipt-row"><span>Seat</span><b>${b.seat_number}</b></div>
+        <div class="receipt-row"><span>Payment method</span><b>${paymentLabel}</b></div>
+        <div class="receipt-row"><span>Booked on</span><b>${formatDate(b.booked_at)}, ${formatTime(b.booked_at)}</b></div>
+
+        <div class="receipt-total">
+          <span style="color:var(--muted);">Total paid</span>
+          <b>${formatMoney(b.amount)}</b>
+        </div>
+      </div>
+      <p class="no-print" style="text-align:center;color:var(--muted);font-size:.82rem;margin-top:16px;">This is a system-generated receipt. Use the Print button above to print or save as PDF.</p>
+    `;
+  } catch (err) {
+    wrap.innerHTML = `<div class="empty-state"><p>${err.message}</p></div>`;
+  }
+}
+
+document.getElementById('print-btn').addEventListener('click', () => window.print());
+load();
+</script>
+</body>
+</html>

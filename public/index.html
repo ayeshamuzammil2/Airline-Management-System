@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Skyline Airways — Book Flights Online</title>
+<link rel="stylesheet" href="css/style.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="container topnav-inner">
+    <a href="index.html" class="brand"><span class="badge"><i class="fa-solid fa-plane"></i></span>Skyline Airways</a>
+    <div class="topnav-links" id="nav-links">
+      <a href="login.html" class="btn btn-ghost">Log in</a>
+      <a href="signup.html" class="btn btn-primary">Sign up</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="container">
+    <div class="hero-top">
+      <span class="eyebrow reveal"><i class="fa-solid fa-plane-departure"></i> Fly smarter, land happier</span>
+      <h1 class="reveal reveal-1">Book your next flight<br/>in <em>under a minute.</em></h1>
+      <p class="lead reveal reveal-2">Real seat maps, instant e-tickets, and a fair first-come booking system — no call centre required.</p>
+    </div>
+
+    <div class="search-card reveal reveal-3">
+      <form id="search-form" class="search-grid">
+        <div class="search-field">
+          <label>From</label>
+          <select id="from-select" required></select>
+        </div>
+        <div class="search-field">
+          <label>To</label>
+          <div class="route-row">
+            <button type="button" class="swap-btn" id="swap-btn" title="Swap"><i class="fa-solid fa-arrow-right-arrow-left"></i></button>
+            <select id="to-select" required style="flex:1;"></select>
+          </div>
+        </div>
+        <div class="search-field">
+          <label>Departure date</label>
+          <input type="date" id="date-select" required />
+        </div>
+        <button type="submit" class="btn btn-amber" style="padding:13px 30px;"><i class="fa-solid fa-magnifying-glass"></i> Search flights</button>
+      </form>
+    </div>
+
+    <div class="hero-stats reveal reveal-3">
+      <div class="stat"><b id="stat-routes">10+</b><span>Destinations</span></div>
+      <div class="stat"><b id="stat-flights">12+</b><span>Weekly flights</span></div>
+      <div class="stat"><b>100%</b><span>Digital e-tickets</span></div>
+    </div>
+  </div>
+</header>
+
+<section class="section">
+  <div class="container">
+    <div class="section-head">
+      <h2>Popular routes right now</h2>
+      <p>Handpicked from our live schedule — tap a card to see fares.</p>
+    </div>
+    <div class="grid-3" id="route-preview"></div>
+  </div>
+</section>
+
+<section class="section" style="background:#fff;">
+  <div class="container">
+    <div class="section-head">
+      <h2>Why travellers choose Skyline</h2>
+      <p>Everything an airline counter does, now in your pocket.</p>
+    </div>
+    <div class="grid-3">
+      <div class="feature-card">
+        <div class="ic"><i class="fa-solid fa-chair"></i></div>
+        <h3>Pick your exact seat</h3>
+        <p>A live seat map for every flight — window, aisle, economy or business, it's your call.</p>
+      </div>
+      <div class="feature-card">
+        <div class="ic"><i class="fa-solid fa-file-pdf"></i></div>
+        <h3>Instant e-ticket</h3>
+        <p>Download a boarding-pass-style PDF the moment you book. No queues, no printing counters.</p>
+      </div>
+      <div class="feature-card">
+        <div class="ic"><i class="fa-solid fa-rotate-left"></i></div>
+        <h3>Cancel anytime</h3>
+        <p>Plans change — cancel a booking in one tap and your seat opens right back up.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <a href="index.html" class="brand"><span class="badge"><i class="fa-solid fa-plane"></i></span>Skyline Airways</a>
+        <p style="max-width:320px;color:rgba(201,214,232,.65);font-size:.86rem;margin-top:12px;">A calmer way to book flights — real seats, real tickets, zero hassle.</p>
+      </div>
+      <div style="display:flex;gap:40px;">
+        <div>
+         
+        </div>
+      </div>
+    </div>
+    <p class="foot-note">Built as a portfolio project — Skyline Airways Reservation System.</p>
+  </div>
+</footer>
+
+<script src="js/main.js"></script>
+<script>
+  let airportsCache = [];
+
+  async function loadAirports() {
+    const { airports } = await api('/airports');
+    airportsCache = airports;
+    const fromSel = document.getElementById('from-select');
+    const toSel = document.getElementById('to-select');
+    const opts = airports.map((a) => `<option value="${a.code}">${a.city} (${a.code})</option>`).join('');
+    fromSel.innerHTML = opts;
+    toSel.innerHTML = opts;
+    if (airports.length > 1) { fromSel.value = airports.find(a=>a.code==='KHI')?.code || airports[0].code; toSel.selectedIndex = 1; }
+    document.getElementById('stat-routes').textContent = airports.length + '+';
+  }
+
+  document.getElementById('swap-btn').addEventListener('click', () => {
+    const fromSel = document.getElementById('from-select');
+    const toSel = document.getElementById('to-select');
+    const tmp = fromSel.value;
+    fromSel.value = toSel.value;
+    toSel.value = tmp;
+  });
+
+  document.getElementById('search-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const from = document.getElementById('from-select').value;
+    const to = document.getElementById('to-select').value;
+    const date = document.getElementById('date-select').value;
+    if (from === to) { toast('Origin and destination can\'t be the same.', 'error'); return; }
+    const params = new URLSearchParams({ from, to });
+    if (date) params.set('date', date);
+    window.location.href = `flights.html?${params.toString()}`;
+  });
+
+  async function loadRoutePreview() {
+    const wrap = document.getElementById('route-preview');
+    try {
+      const { flights } = await api('/flights/search');
+      document.getElementById('stat-flights').textContent = flights.length + '+';
+      const seen = new Set();
+      const unique = flights.filter((f) => {
+        const key = f.origin_code + f.destination_code;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      }).slice(0, 6);
+      if (!unique.length) {
+        wrap.innerHTML = `<div class="empty-state" style="grid-column:1/-1;"><i class="fa-solid fa-plane-slash"></i><p>No flights scheduled yet.</p></div>`;
+        return;
+      }
+      wrap.innerHTML = unique.map((f) => `
+        <a href="flights.html?from=${f.origin_code}&to=${f.destination_code}" class="route-card">
+          <div class="rc-top"><i class="fa-solid fa-plane"></i></div>
+          <div class="rc-body">
+            <div class="rc-cities"><span>${f.origin_code}</span><i class="fa-solid fa-arrow-right" style="color:var(--amber);font-size:.85rem;"></i><span>${f.destination_code}</span></div>
+            <div class="rc-price">${f.origin_city} → ${f.destination_city} · from ${formatMoney(f.economy_price)}</div>
+          </div>
+        </a>`).join('');
+    } catch (e) {
+      wrap.innerHTML = `<div class="empty-state" style="grid-column:1/-1;"><i class="fa-solid fa-plug-circle-xmark"></i><p>Couldn't reach the server. Is it running and is DATABASE_URL set?</p></div>`;
+    }
+  }
+
+  function initNav() {
+    const session = getSession();
+    if (session) {
+      document.getElementById('nav-links').innerHTML = `
+        <a href="${session.role === 'admin' ? 'admin.html' : 'mybookings.html'}" class="btn btn-ghost"><i class="fa-solid fa-gauge"></i> Dashboard</a>
+        <a href="#" id="nav-logout" class="btn btn-primary"><i class="fa-solid fa-right-from-bracket"></i> Log out</a>`;
+      document.getElementById('nav-logout').addEventListener('click', (e) => { e.preventDefault(); clearSession(); window.location.reload(); });
+    }
+  }
+
+  const dateInput = document.getElementById('date-select');
+  dateInput.min = new Date().toISOString().slice(0, 10);
+  dateInput.value = new Date(Date.now() + 86400000).toISOString().slice(0, 10);
+
+  initNav();
+  loadAirports();
+  loadRoutePreview();
+</script>
+</body>
+</html>
